@@ -24,25 +24,28 @@ async function main() {
 //   });
 // });
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "nama tidak boleh kosong"],
-  },
-  age: { type: Number, required: [true, "umur tidak boleh kosong"] },
-  status: {
-    type: String,
-    enum: ["active", "non active"],
-    default: "non active",
-  },
-});
+//*-----------------------------------
 
-const User = mongoose.model("User", userSchema);
+// const userSchema = new mongoose.Schema({
+//   name: {
+//     type: String,
+//     required: [true, "nama tidak boleh kosong"],
+//   },
+//   age: { type: Number, required: [true, "umur tidak boleh kosong"] },
+//   status: {
+//     type: String,
+//     enum: ["active", "non active"],
+//     default: "non active",
+//   },
+// });
+
+// const User = mongoose.model("User", userSchema);
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error: "));
 db.once("open", async () => {
   //we're connect
+  console.log("server database connect");
 
   // //*find all
   // const users = await User.find(); //findall
@@ -80,7 +83,7 @@ db.once("open", async () => {
   // const deleteUser = await User.deleteOne({ _id: "61404beb92feb3ddcc04a4f0" });
   // console.log(deleteUser);
 
-  // //*validasi
-  const user = await User.create({});
-  console.log(user);
+  // // //*validasi
+  // const user = await User.create({});
+  // console.log(user);
 });
