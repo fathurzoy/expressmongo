@@ -1,70 +1,108 @@
+const { ObjectId } = require("bson");
 const express = require("express");
 const router = express.Router();
+const connection = require("./connection");
 
-const myLogger = function (req, res, next) {
-  console.log("LOGGED");
-  next();
-};
-
-router.get("/", myLogger, function (req, res) {
+router.get("/", function (req, res) {
   res.send("Hello World!");
 });
 
-router.get("/users ", function (req, res) {
-  const name = req.query.name; //query builder
-  const age = req.query.age;
-
-  res.send(name + " " + age);
-});
-
-// query
-router.get("/users", function (req, res) {
-  const name = req.query.name; //query builder
-  const age = req.query.age;
-
-  res.send(name + " " + age);
-});
-
-// params
-router.get("/users/:id", function (req, res) {
-  const id = req.params.id;
-  console.log(id);
-  if (Number(id) === 1) {
-    const user = {
-      id: 1,
-      name: "fathur",
-      age: 25,
-    };
-    res.send(user);
-  } else {
-    const user = {
-      id: 2,
-      name: "ozan",
-      age: 25,
-    };
-    res.send(user);
+//get
+router.get("/users", async (req, res) => {
+  try {
+    if (connection.connect()) {
+      const db = connection.db("db_latihan");
+      const users = await db.collection("users").find().toArray();
+      res.send({ data: users });
+    } else {
+      res.send({ message: "Koneksi database gagal" });
+    }
+  } catch (err) {
+    res.send({ message: err.message || "internal server error" });
   }
 });
 
-// router.get("/users/2", function (req, res) {
-//   const user = {
-//     id: 2,
-//     name: "rahman",
-//     age: 25,
-//   };
-//   res.send(user);
-// });
-
-router.post("/user", function (req, res) {
-  res.send("Got a POST request");
+//post
+router.post("/users", async (req, res) => {
+  try {
+    if (connection.connect()) {
+      const { name, age, status } = req.body;
+      const db = connection.db("db_latihan");
+      const users = await db.collection("users").insertOne({
+        name,
+        age,
+        status,
+      });
+      console.log("users >>");
+      console.log(users);
+      if (users.insertedId === 1) {
+        res.send({ message: "berhasil ditambahkan" });
+      } else {
+        res.send({ message: "gagal menambah user" });
+      }
+    } else {
+      res.send({ message: "Koneksi database gagal" });
+    }
+  } catch (err) {
+    res.send({ message: err.message || "internal server error" });
+  }
 });
 
-router.put("/user", function (req, res) {
-  res.send("Got a PUT request at /user");
+//put
+router.put("/users/:id", async (req, res) => {
+  try {
+    if (connection.connect()) {
+      const { id } = req.params;
+      const { name, age, status } = req.body;
+      const db = connection.db("db_latihan");
+      const users = await db.collection("users").updateOne(
+        { _id: ObjectId(id) },
+        {
+          $set: {
+            name,
+            age,
+            status,
+          },
+        }
+      );
+      console.log("users >>");
+      console.log(users);
+      if (users.modifiedCount === 1) {
+        res.send({ message: "berhasil diubah" });
+      } else {
+        res.send({ message: "gagal diubah user" });
+      }
+    } else {
+      res.send({ message: "Koneksi database gagal" });
+    }
+  } catch (err) {
+    res.send({ message: err.message || "internal server error" });
+  }
 });
 
-router.delete("/user", function (req, res) {
-  res.send("Got a DELETE request at /user");
+//put
+router.delete("/users/:id", async (req, res) => {
+  try {
+    if (connection.connect()) {
+      const { id } = req.params;
+      const db = connection.db("db_latihan");
+      const users = await db
+        .collection("users")
+        .deleteOne({ _id: ObjectId(id) });
+
+      console.log("users >>");
+      console.log(users);
+      if (users.deletedCount === 1) {
+        res.send({ message: "berhasil hapus" });
+      } else {
+        res.send({ message: "gagal hapus user" });
+      }
+    } else {
+      res.send({ message: "Koneksi database gagal" });
+    }
+  } catch (err) {
+    res.send({ message: err.message || "internal server error" });
+  }
 });
 
 module.exports = router;
